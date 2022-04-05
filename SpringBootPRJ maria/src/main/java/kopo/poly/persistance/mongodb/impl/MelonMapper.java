@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+import static com.mongodb.client.model.Updates.set;
+
 @Slf4j
 @Component("MelonMapper")
 public class MelonMapper extends AbstractMongoDBComon implements IMelonMapper {
@@ -211,6 +213,173 @@ public class MelonMapper extends AbstractMongoDBComon implements IMelonMapper {
 
 		 return rList;
 
+	}
+
+	@Override
+	public int insertSongMany(List<MelonDTO> pList, String colNm) throws Exception {
+
+		log.info(this.getClass().getName() + ".insertSongMany Start!");
+
+		int res = 0;
+
+		if (pList == null) {
+			pList = new LinkedList<>();
+		}
+
+		// 데이터를 저장할 컬렉션 생성
+		super.createCollection(colNm, "collectTime");
+
+		// 저장할 컬렉션 객체 생성
+		MongoCollection<Document> col = mongodb.getCollection(colNm);
+
+		List<Document> list = new ArrayList<>();
+
+		// 람다식 활용 stream과 -> 사용
+		pList.forEach(melon -> list.add(new Document(new ObjectMapper().convertValue(melon, Map.class))));
+
+		// 레코드 리스트 단위로 한번에 저장하기
+		col.insertMany(list);
+		res = 1;
+
+		log.info(this.getClass().getName() + ".insertSong End!");
+
+		return res;
+	}
+
+	@Override
+	public int dropMelonCollection(String colNm) throws Exception {
+
+		log.info(this.getClass().getName() + ".dropMelonCollection Start!");
+
+		int res = 0;
+
+		super.dropCollection(colNm);
+
+		res = 1;
+
+		log.info(this.getClass().getName() + "dropMelonCollection End!");
+
+		return res;
+	}
+
+	@Override
+	public int updateSong(String pColNm, String pSinger, String pUpdateSinger) throws  Exception {
+
+		log.info(this.getClass().getName() + ".updateSong Start!");
+
+		int res = 0;
+
+		MongoCollection<Document> col = mongodb.getCollection(pColNm);
+
+		log.info("pColNm : " + pColNm);
+
+		// 조회할 조건 (SQL의 WHERE의 역할 / SELECT * FROM MELON_20220321 where singer = '방탄소년단')
+		Document query = new Document();
+		query.append("singer", pSinger);
+
+		// MongoDB 데이터삭제는 반드시 컬랙션을 조회하고, 조회된 ObjectID를 기반으로 데이터를 삭제함
+		// MongoDB 환경은 분산환경(Sharding)으로 구성할 수 있기 떄문에 정확한 PK에 매핑하기 위해서임
+		FindIterable<Document> rs = col.find(query);
+
+		// 람다식을 활용하여 데이터 삭제하기
+		// 전체 컬랙션이 옜는 데이터들을 삭제하기
+		rs.forEach(doc -> col.updateOne(doc, new Document("$set", new Document("singer", "BTS"))));
+
+		res = 1;
+
+		log.info(this.getClass().getName() + ".updateSong End!");
+
+		return res;
+	}
+
+	@Override
+	public int updateSongAddField(String pColNm, String pSinger, String pNickname) throws Exception {
+
+		log.info(this.getClass().getName() + ".updateSongAddField Start!");
+
+		int res = 0;
+
+		MongoCollection<Document> col = mongodb.getCollection(pColNm);
+
+		log.info("pColNm : " + pColNm);
+		log.info("pSinger : " + pSinger);
+
+		// 조회할 조건 (SQL의 WHERE 역할 / SELECT * FROM MELON_20220321 where singer = '방탄소년단')
+		Document query = new Document();
+		query.append("singer", pSinger);
+
+		// MongoDB 데이터 삭제는 반드시 컬래개션으 조회하고, 조회된 ObjectID를 기반으로 데이터를 삭제함
+		// MongoDB 환경은 분산환경(Sharding)으로 구성될 수 있기 때문에 정확한 PX에 매ㅐ핑하기 위해서임
+		FindIterable<Document> rs = col.find(query);
+
+		// 람다식 활용하여 nickname 필드 추가하기
+		// 전체 컬랙션에 있는 데이터를 삭제하기
+		rs.forEach(doc -> col.updateOne(doc, set("nickname", pNickname)));
+
+		res = 1;
+
+		log.info(this.getClass().getName() + ".updateSongAddField End!");
+
+		return res;
+	}
+
+	@Override
+	public int updateSongAddListField(String pColNm, String pSinger, List<String> pmember) throws Exception {
+
+		log.info(this.getClass().getName() + ".updateSongAddListField Start!");
+
+		int res = 0;
+
+		MongoCollection<Document> col = mongodb.getCollection(pColNm);
+
+		log.info("pColNm : " + pColNm);
+		log.info("pSinger : " + pSinger);
+
+		// 조회할 조건 (SQL의 WHERE 역할 / SELECT * FROM MELON_20220321 where singer = '방탄소년단')
+		Document query = new Document();
+		query.append("singer", pSinger);
+
+		// MongoDB 데이터 삭제는 반드시 컬래개션으 조회하고, 조회된 ObjectID를 기반으로 데이터를 삭제함
+		// MongoDB 환경은 분산환경(Sharding)으로 구성될 수 있기 때문에 정확한 PX에 매ㅐ핑하기 위해서임
+		FindIterable<Document> rs = col.find(query);
+
+		// 람다식 활용하여 nickname 필드 추가하기
+		// 전체 컬랙션에 있는 데이터를 삭제하기
+		rs.forEach(doc -> col.updateOne(doc, set("member", pmember)));
+
+		res = 1;
+
+		log.info(this.getClass().getName() + ".updateSongAddListField End!");
+
+		return res;
+	}
+
+	@Override
+	public int deleteSong(String pColNm, String pSinger) throws Exception {
+
+		log.info(this.getClass().getName() + ".deleteSong Start!");
+
+		int res = 0;
+
+		MongoCollection<Document> col = mongodb.getCollection(pColNm);
+
+		// 조회할 조건 (SQL의 WHERE 역할 / SELECT * FROM MELON_20220321 where singer = '방탄소년단')
+		Document query = new Document();
+		query.append("singer", pSinger);
+
+		// MongoDB 데이터 삭제는 반드시 컬래개션으 조회하고, 조회된 ObjectID를 기반으로 데이터를 삭제함
+		// MongoDB 환경은 분산환경(Sharding)으로 구성될 수 있기 때문에 정확한 PX에 매ㅐ핑하기 위해서임
+		FindIterable<Document> rs = col.find(query);
+
+		// 람다식 활용하여 nickname 필드 추가하기
+		// 전체 컬랙션에 있는 데이터를 삭제하기
+		rs.forEach(doc -> col.deleteOne(doc));
+
+		res = 1;
+
+		log.info(this.getClass().getName() + ".deleteSong End!");
+
+		return res;
 	}
 
 }

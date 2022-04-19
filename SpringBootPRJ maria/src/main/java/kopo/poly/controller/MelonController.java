@@ -184,6 +184,27 @@ public class MelonController {
         return msg;
     }
 
+    @GetMapping(value = "melon/updateManySong")
+    public String updateManySong() throws Exception {
+
+        log.info(this.getClass().getName() + ".updateManySong Start!");
+
+        // 결과 측정
+        String msg;
+
+        int res = melonService.updateManySong();
+
+        if (res == 1) {
+            msg = "success";
+        } else {
+            msg = "fail";
+        }
+
+        log.info(this.getClass().getName() + ".updateManySong Start!");
+
+        return msg;
+    }
+
     @GetMapping(value = "melon/deleteSong")
     public String deleteSong() throws Exception {
 

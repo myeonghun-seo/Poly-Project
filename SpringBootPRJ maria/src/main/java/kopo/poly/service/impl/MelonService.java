@@ -2,7 +2,7 @@ package kopo.poly.service.impl;
 
 import kopo.poly.dto.MelonDTO;
 import kopo.poly.persistance.mongodb.IMelonMapper;
-//import kopo.poly.persistance.redis.IMelonCacheMapper;
+import kopo.poly.persistance.redis.IMelonCacheMapper;
 import kopo.poly.service.IMelonService;
 import kopo.poly.util.CmmUtil;
 import kopo.poly.util.DateUtil;
@@ -14,7 +14,9 @@ import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 @Slf4j
 @Service("MelonService")
@@ -23,8 +25,8 @@ public class MelonService implements IMelonService {
     @Resource(name = "MelonMapper")
     private IMelonMapper melonMapper; // MongoDB에 저장할 Mapper
 
-//    @Resource(name = "MelonCacheMapper")
-//    private IMelonCacheMapper melonCacheMapper; // redisDB에 저장할 Mapper
+    @Resource(name = "MelonCacheMapper")
+    private IMelonCacheMapper melonCacheMapper; // redisDB에 저장할 Mapper
 
     @Override
     public int collectMelonSong() throws Exception {
@@ -78,7 +80,7 @@ public class MelonService implements IMelonService {
         res = melonMapper.insertSong(pList, colNm);
 
         // RedisDB에 데이터저장하기
-//        res = melonCacheMapper.insertSong(pList);
+        res = melonCacheMapper.insertSong(pList, colNm);
 
         // 로그 찍기(추후 찍은 로그를 통해 이 함수에 접근했는지 파악하기 용이하다.)
         log.info(this.getClass().getName() + ".collectMelonSong End!");
@@ -96,21 +98,21 @@ public class MelonService implements IMelonService {
 
         List<MelonDTO> rList = new LinkedList<>();
 
-//        // RedisDB에 저장되어 있는지 확인하기(Key이름은 MongoDB 컬렉션 이름과 동일하게 사용함)
-//        if (melonCacheMapper.getExistKey(colNm)){
-//            for (Object rDTO: melonCacheMapper.getSongList(colNm)){
-//                rList.add((MelonDTO) rDTO);
-//
-//            }
-//
-//        }else{
-            rList = melonMapper.getSongList(colNm);
+        // RedisDB에 저장되어 있는지 확인하기(Key이름은 MongoDB 컬렉션 이름과 동일하게 사용함)
+        if (melonCacheMapper.getExistKey(colNm)){
+            for (Object rDTO: melonCacheMapper.getSongList(colNm)){ // RedisDB에서 데이터 가져오기
+                rList.add((MelonDTO) rDTO);
 
-//        }
+            }
 
-//        if (rList == null) {
-//            rList = new LinkedList<>();
-//        }
+        }else{
+            rList = melonMapper.getSongList(colNm); // MongoDB에서 데이터 가져오기
+
+        }
+
+        if (rList == null) {
+            rList = new LinkedList<>();
+        }
 
         log.info(this.getClass().getName() + ".getSongList End!");
 

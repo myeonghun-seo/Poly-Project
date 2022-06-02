@@ -12,13 +12,13 @@ import java.io.IOException;
  * Mapper 파일의 앞의 2개 데이터 타입(LongWritabl, Text)은 분석할 파일의 키과 값의 데이터 타입
  * Mapper 파일의 뒤의 2개 데이터 타입(Text, IntWritable)은 리듀스에 보낼 키와 값의 데이터 타입
  */
-public class WordCountMapper extends Mapper<LongWritable, Text, Text, IntWritable>{
+public class WordCountMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
+
     /**
      * 부모 Mapper 자바 파일에 작성된 map 함수를 덮어쓰기 수행
      * map 함수는 분석할 파일의 레코드 1줄마다 실행됨
      * 파일의 라인수가 100개라면, map함수는 100번 실행됨
      */
-
     @Override
     public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 

@@ -9,7 +9,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 /**
  * 멥리듀스를 실행하기 위한 Main 함수가 존재하는 자바 파일
- * 드라입버 파일로 부름
+ * 드라이버 파일로 부름
  */
 public class WordCount {
 
@@ -53,5 +53,7 @@ public class WordCount {
         // 맵리듀스 실행
         boolean success = job.waitForCompletion(true);
         System.exit(success ? 0 : 1);
+
     }
+
 }
